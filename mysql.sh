@@ -39,8 +39,16 @@ VALIDATE $? "Installing MySQL Server"
 
 systemctl enable mysqld &>>$LOG_FILE
 VALIDATE $? "Enabled MySQL Server"
-systemctl start mysqld &>>$LOG_FILE
-VALIDATE $? "start MySQL Server"
 
-mysql_secure_installation --set-root-pass ExpenseApp@1 &>>$LOG_FILE
-VALIDATE $? "setting up root password"
+systemctl start mysqld &>>$LOG_FILE
+VALIDATE $? "started MySQL Server"
+
+mysql -h  mysql.arunrak.online -u root -pExpenseApp@1 -e 'show databases' &>>$LOG_FILE
+if [ $? -ne 0 ]
+then
+    echo "Mysql root password is not setup, setting now" &>>$LOG_FILE
+    mysql_secure_installation --set-root-pass ExpenseApp@1
+    VALIDATE $? "Setting up root password"
+else
+    echo "Mysql root password is already setup... $Y SKIPPING $N" | tee -a $LOG_FILE
+fi
